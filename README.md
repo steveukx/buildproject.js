@@ -26,4 +26,17 @@ Additional configuration can be either set in the command line or in the JSON fi
 `--verbose` prints a lot of information to the console as the build is running
 
 
+buildproject.json
+=================
+
+Detailed configuration for the build can be supplied in a JSON file (usually called `buildproject.json`) that should have the following properties:
+
+`profiles` required
+A map of string arrays, the names in the map are the names of the profiles. Use these to split out types of task, for example the debug versus production profile.
+
+`src` _optional_
+The full path to the source directory - this is prepended to the path in all source tasks. When omitted (or empty) this will default to a directory named 'src' at the same level as the JSON file.
+
+`target` _optional_
+The full path to the output directory - this is prepended to the path in all output tasks. When omitted (or empty) this will default to a directory named 'web' at the same level as the JSON file.
 
