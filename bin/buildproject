@@ -26,7 +26,6 @@ catch(e) {
 }
 
 // configuration source directory
-debugger;
 appConfig.src     = appConfig.src    || (Commands.exists('sourcepath') ? path.resolve(process.cwd(), Commands.get('sourcepath')) : path.resolve(appConfigPath, '../src'));
 appConfig.target  = appConfig.target || (Commands.exists('targetpath') ? path.resolve(process.cwd(), Commands.get('targetpath')) : path.resolve(appConfigPath, '../web'));
 
