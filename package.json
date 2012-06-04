@@ -3,7 +3,7 @@
    "description":       "Tools to build a project from almost any source to an output structure",
    "author":            "Steve King <steve@mydev.co>",
    "contributors":      [ { "name": "Steve King", "email": "steve@mydev.co" } ],
-   "version":           "0.0.1",
+   "version":           "0.0.2",
    "main":              "./src/builder.js",
    "bin": {
       "buildproject":   "./bin/buildproject"
