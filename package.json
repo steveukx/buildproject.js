@@ -1,0 +1,27 @@
+{
+   "name":              "buildproject",
+   "description":       "Tools to build a project from almost any source to an output structure",
+   "author":            "Steve King <steve@mydev.co>",
+   "contributors":      [ { "name": "Steve King", "email": "steve@mydev.co" } ],
+   "version":           "0.0.1",
+   "main":              "./src/builder.js",
+   "bin": {
+      "buildproject":   "./bin/buildproject"
+   },
+   "engines": {
+      "node":           ">= 0.6.0"
+   },
+   "dependencies": {
+      "commands":       "",
+      "hogan":          "",
+      "less":           "",
+      "readdir":        "",
+      "task-runner":    "",
+      "uglify-js":      "",
+      "xhrequest":      ""
+   },
+   "devDependencies": {
+      "nodeunit":       ">=0.6.4",
+      "sinon":          ">=1.3.1"
+   }
+}

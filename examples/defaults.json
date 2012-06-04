@@ -1,0 +1,42 @@
+{
+   "profiles": {
+      "full": [
+         "--clean",
+         "--process-templates",
+         "--process-less",
+         "--process-javascript",
+         "-js-includes", "js/list.json",
+         "-remote-js", "http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js",
+         "-remote-js", "https://raw.github.com/twitter/hogan.js/master/web/builds/2.0.0/hogan-2.0.0.js",
+         "-remote-js", "https://raw.github.com/steveukx/Subscribable/master/src/subscribable.js",
+         "-link", "webapp/*,"
+      ],
+      "debug": [
+         "--clean",
+         "--process-templates",
+         "--process-less",
+         "--process-javascript",
+         "-js-includes", "js/list.json",
+         "-remote-js", "http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js",
+         "-remote-js", "https://raw.github.com/twitter/hogan.js/master/web/builds/2.0.0/hogan-2.0.0.js",
+         "-remote-js", "https://raw.github.com/steveukx/Subscribable/master/src/subscribable.js",
+         "-link", "webapp/*,"
+      ],
+      "css": [
+         "--process-less"
+      ],
+      "js": [
+         "--process-javascript",
+         "-js-includes", "js/list.json",
+         "-remote-js", "http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js",
+         "-remote-js", "https://raw.github.com/twitter/hogan.js/master/web/builds/2.0.0/hogan-2.0.0.js",
+         "-remote-js", "https://raw.github.com/steveukx/Subscribable/master/src/subscribable.js"
+      ],
+      "templates": [
+         "--process-templates"
+      ],
+      "clean": [
+         "--clean"
+      ]
+   }
+}

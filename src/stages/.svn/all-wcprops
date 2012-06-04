@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/Repos/!svn/ver/507/hotguyscalendar.com/website/trunk/build/stages
+END
+process-css.js
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/Repos/!svn/ver/497/hotguyscalendar.com/website/trunk/build/stages/process-css.js
+END
+process-templates.js
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/Repos/!svn/ver/507/hotguyscalendar.com/website/trunk/build/stages/process-templates.js
+END
+process-javascript.js
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/Repos/!svn/ver/505/hotguyscalendar.com/website/trunk/build/stages/process-javascript.js
+END
+process-less.js
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/Repos/!svn/ver/497/hotguyscalendar.com/website/trunk/build/stages/process-less.js
+END

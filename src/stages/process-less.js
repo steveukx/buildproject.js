@@ -1,0 +1,100 @@
+
+"use strict";
+
+/**
+ *
+ * @param {String} sourcePath
+ * @param {String} targetPath
+ * @param {TaskRunner} taskRunner
+ * @param {Object} options
+ */
+module.exports = function(sourcePath, targetPath, taskRunner, options) {
+
+   if(options.processLess) {
+      (function() {
+         var fs = require('fs'),
+            sourceDir = sourcePath + (options.lessSource || 'css').replace(/\/$/, '') + '/',
+            outputFile = targetPath + (options.lessOutput || 'css/style.css'),
+            sourceFiles,
+            allLessContent;
+
+         taskRunner.push(function(next) {
+            var readdir = require('readdir');
+            sourceFiles = readdir.readSync(sourceDir, ['rules.less','**.less'], readdir.ABSOLUTE_PATHS);
+            next();
+         }, 'Find all less files');
+
+         taskRunner.push(function(next) {
+            var concatenationTaskRunner = new (require('task-runner').TaskRunner);
+            sourceFiles.forEach(function(sourceFile, index) {
+               concatenationTaskRunner.push(function(next) {
+                  fs.readFile(sourceFile, 'utf-8', function(err, data) {
+                     sourceFiles[index] = data;
+                     next();
+                  });
+               }, 'Read LESS file ' + sourceFile);
+            });
+            concatenationTaskRunner.start(next);
+         }, 'Read all LESS files');
+
+         taskRunner.push(function() {
+            allLessContent = sourceFiles.join('\n\n');
+         }, 'Concatenate LESS', false);
+
+         taskRunner.push(function(next) {
+            var tokenisingTaskRunner = new (require('task-runner').TaskRunner),
+                tokenContent = {};
+
+            if(options.styleTokens) {
+               var readdir = require('readdir'),
+                  sourceFiles = readdir.readSync(sourceDir, ['**tokens.json'], readdir.ABSOLUTE_PATHS);
+
+               sourceFiles.forEach(function(sourceFile) {
+                  tokenisingTaskRunner.push(function(next) {
+                     fs.readFile(sourceFile, 'utf-8', function(err, data) {
+                        var file = JSON.parse(data);
+                        for(var el in file) {
+                           tokenContent[el] = file[el];
+                        }
+                        next();
+                     });
+                  }, 'Read LESS Tokens from ' + sourceFile);
+               });
+            }
+
+            tokenisingTaskRunner.push(function(next) {
+               var prefix = [];
+               for(var el in tokenContent) {
+                  prefix.push('@' + el + ': ' + tokenContent[el] + ';');
+               }
+
+               // TODO: explicitly create the LESS parser and run with minification on then remove the step after this
+               require('less').render(prefix.join('\n') + '\n\n' + allLessContent, function(err, css) {
+                  if(err) {
+                     throw err;
+                  }
+                  allLessContent = css;
+                  next();
+               });
+            }, 'Run LESS process');
+
+            tokenisingTaskRunner.start(next);
+
+         }, 'Tokenising LESS');
+
+         taskRunner.push(function(next) {
+            fs.writeFile(outputFile.replace('.css', '.debug.css'), allLessContent, 'utf-8', next);
+         }, 'Write debug LESS');
+
+         taskRunner.push(function() {
+            allLessContent = allLessContent.replace(/\s+/g, ' ')
+                                 .replace(/\/\*[^(\*\/)]*\*\//g, ' ');
+         }, 'Minify LESS', false);
+
+         taskRunner.push(function(next) {
+            fs.writeFile(outputFile, allLessContent, 'utf-8', next);
+         }, 'Write LESS to' + outputFile);
+      }());
+   }
+
+};

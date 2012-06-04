@@ -1,0 +1,6 @@
+.git*
+.idea*
+.git
+.idea
+.DS_Store
+Thumbs.db

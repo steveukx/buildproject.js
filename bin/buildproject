@@ -1,0 +1,42 @@
+// #!/usr/bin/env node
+
+var spawn = require('child_process').spawn;
+var fs = require('fs');
+var path = require('path');
+var Commands = require('commands');
+var appConfigPath = Commands.get('config') || path.resolve(process.cwd(), 'buildproject.json');
+var appConfig;
+
+try {
+   appConfig = JSON.parse(fs.readFileSync(appConfigPath, 'utf-8'));
+   'profiles'.split(' ').forEach(function(key) { if(!appConfig[key]) throw new Error('Required attribute "' + key + '" not found'); })
+}
+catch(e) {
+   if(e.code == 'ENOENT') {
+      console.error('Configuration file not found: ' + appConfigPath);
+   }
+   else if(e instanceof SyntaxError) {
+      console.error('Badly formatted JSON, please ensure the configuration file is JSON rather than plain JavaScript.');
+   }
+   else {
+      console.error(require('util').inspect(e));
+   }
+   console.log('Giving up...');
+   process.exit();
+}
+
+// configuration source directory
+debugger;
+appConfig.src     = appConfig.src    || (Commands.exists('sourcepath') ? path.resolve(process.cwd(), Commands.get('sourcepath')) : path.resolve(appConfigPath, '../src'));
+appConfig.target  = appConfig.target || (Commands.exists('targetpath') ? path.resolve(process.cwd(), Commands.get('targetpath')) : path.resolve(appConfigPath, '../web'));
+
+appConfig.profile = appConfig.profiles[Commands.get('profile', 'full')] || appConfig.profiles[Object.keys(appConfig.profiles)[0]];
+
+console.log( 'Source Path: ', appConfig.src );
+console.log( 'Target Path: ', appConfig.target );
+for(var i = 0; i < appConfig.profile.length; i++) console.log('  [TASK] ', appConfig.profile[i], appConfig.profile[i].match(/^\-[^\-]/) ? appConfig.profile[++i] : '');
+
+var dt = Date.now();
+(require('../src/builder'))(appConfig.src, appConfig.target, Commands.evaluate(appConfig.profile), function() {
+   console.log('Build finished in ' + Math.floor((Date.now() - dt)/100)/10 + ' seconds');
+});
