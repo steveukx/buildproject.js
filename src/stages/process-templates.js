@@ -1,6 +1,4 @@
 
-"use strict";
-
 /**
  *
  * @param {String} sourcePath
@@ -9,6 +7,8 @@
  * @param {Object} options
  */
 module.exports = function(sourcePath, targetPath, taskRunner, options) {
+
+   "use strict";
 
    var outputFilePath = targetPath + (options.templateOutput || 'js/templates.js');
 
@@ -19,35 +19,24 @@ module.exports = function(sourcePath, targetPath, taskRunner, options) {
             fs = require('fs'),
             templatePath = sourcePath + (options.templatePath || 'templates').replace(/\/$/, '') + '/',
             includeFilters = ['*.html'],
-            templates;
+            templates,
+            templateRuns = null;
 
-         taskRunner.push(function(next) {
-            try {
-               var includes = JSON.parse(fs.readFileSync(templatePath + 'list.json', 'utf-8')).client;
-               includeFilters = [];
-               for(var templateName in includes) {
-                  includeFilters.push(templateName + '.html');
-               };
-            }
-            catch (e) {
-               console.warn(e.toString());
-            }
+         var processTemplateBatch = function(next) {
+            this.templateFiles = require('readdir').readSync(templatePath, this.source);
             next();
-         }, 'read template listing')
+         };
 
-         taskRunner.push(function(next) {
-            templates = require('readdir').readSync(templatePath, includeFilters);
-            next();
-         }, 'read templates');
-
-         taskRunner.push(function(next) {
+         var concatenateTemplateBatch = function(next) {
             var commentRegex = /<!\-\-([^--]+)-->/g,
                 scriptRegex = /<\/script>/g,
-                scriptReplacement = '" + decodeURIComponent("' + encodeURIComponent('</script>') + '") + "';
+                scriptReplacement = '" + decodeURIComponent("' + encodeURIComponent('</script>') + '") + "',
+                templates = this.templateFiles,
+                flattenPaths = !!this.flattenPaths;
 
             templates.forEach(function(templateName, index) {
 
-               var key = templateName.replace(/\..*$/, '');
+               var key = (flattenPaths ? require('path').basename(templateName) : templateName).replace(/\..*$/, '');
 
                console.log('    [TEMPLATE] ', templatePath + templateName, key);
 
@@ -61,16 +50,49 @@ module.exports = function(sourcePath, targetPath, taskRunner, options) {
                };
             });
             next();
-         }, 'compile templates');
+         };
+
+         var compileTemplateBatch = function(next) {
+            console.log('    [TEMPLATE-OUTPUT] Saving template batch to ' + targetPath + this.filename);
+            var variable = this.variable || 'templates',
+                variablePrefix = (variable.indexOf('.') < 0) ? 'var ' : '';
+
+            var outputTemplate = Hogan.compile("{{variablePrefix}}{{variable}} = {}; {{#templates}} {{variable}}['{{name}}'] = new Hogan.Template({{{template}}}); {{/templates}}");
+            fs.writeFile(
+               targetPath + this.filename,
+               outputTemplate.render({templates: this.templateFiles, variable: this.variable, variablePrefix: variablePrefix}), 'utf-8', next);
+         };
 
          taskRunner.push(function(next) {
-            var outputTemplate = Hogan.compile("var templates = {}; {{#templates}} templates['{{name}}'] = new Hogan.Template({{{template}}}); {{/templates}}");
-            fs.writeFile(
-               outputFilePath,
-               outputTemplate.render({templates: templates}), 'utf-8', next);
-         }, 'Save compiled template to ' + outputFilePath);
+            try {
+               templateRuns = JSON.parse(fs.readFileSync(templatePath + 'list.json', 'utf-8'));
+               if(!Array.isArray(templateRuns)) {
+                  throw new TypeError('Templates list.json must contain an array of configuration objects.');
+               }
+            }
+            catch (e) {
+               console.error('[ERROR] Can not parse list.json for templates', e);
+               process.exit();
+            }
+
+            templateRuns.forEach(function(templateBatch, index) {
+               if(!templateBatch.filename) {
+                  throw new SyntaxError('Templates list.json must contain a filename attribute for each entry');
+               }
+
+               if(!templateBatch.variable) {
+                  console.warn('  [WARN] TemplateBatch ' + index + ' does not specify a variable name, using default of "templates"');
+                  templateBatch.variable = 'templates';
+               }
+
+               taskRunner.push( processTemplateBatch.bind(templateBatch), 'Processing template batch ' + index );
+               taskRunner.push( concatenateTemplateBatch.bind(templateBatch), 'Read individual template in batch ' + index );
+               taskRunner.push( compileTemplateBatch.bind(templateBatch), 'Compile template in batch ' + index );
+            });
+
+            next();
+         }, 'read template listing');
 
       }());
    }
-
 };

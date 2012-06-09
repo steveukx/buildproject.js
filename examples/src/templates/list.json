@@ -1,0 +1,16 @@
+[
+   {
+      "filename": "all-templates.js",
+      "source": [
+         "**.html"
+      ]
+   },
+   {
+      "filename": "flattened-namespace-templates.js",
+      "source": [
+         "namespace/**.html"
+      ],
+      "flattenPaths": true,
+      "variable": "Templates.ns"
+   }
+]
