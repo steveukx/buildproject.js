@@ -80,9 +80,9 @@ module.exports = function(sourcePath, targetPath, taskRunner, options) {
 
    if(options.processLess) {
       taskRunner.push(function(next) {
-         var builds;
+         var builds = options.configuration.less;
          try {
-            builds = JSON.parse(fs.readFileSync(sourceDir + 'list.json', 'utf-8'));
+            builds = builds || JSON.parse(fs.readFileSync(sourceDir + 'list.json', 'utf-8'));
             if(!Array.isArray(builds)) {
                throw new TypeError('LESS list.json must contain an array of configuration objects.');
             }

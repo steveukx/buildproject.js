@@ -25,6 +25,16 @@
       "css": [
          "--process-less"
       ],
+      "css-inline": {
+         "commands": [
+            "--process-less"
+         ],
+         "configuration": {
+            "less": [
+               { "include": [ "first.less", "**.less" ], "filename": "local.css" }
+            ]
+         }
+      },
       "js": [
          "--process-javascript",
          "-js-includes", "js/list.json",
