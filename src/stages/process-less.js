@@ -2,13 +2,12 @@
 "use strict";
 
 var TaskRunner = require('task-runner').TaskRunner;
-var XHR = require('xhrequest');
 var fs = require('fs');
 
 var remoteLoader = require('../remote-loader');
 var less = require('less');
 
-function process(sourceDir, targetDir, taskRunner, processOptions) {
+function execute(sourceDir, targetDir, taskRunner, processOptions) {
 
    var sourceFiles,
        outputFile = targetDir + (processOptions.filename || 'style.css'),
@@ -93,7 +92,7 @@ module.exports = function(sourcePath, targetPath, taskRunner, options) {
          }
 
          next(builds.forEach(function(build) {
-            process(sourceDir, targetDir, taskRunner, build);
+            execute(sourceDir, targetDir, taskRunner, build);
          }));
       }, 'Parsing LESS filters file');
    }

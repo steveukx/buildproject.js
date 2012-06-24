@@ -2,21 +2,20 @@
 "use strict";
 
 var TaskRunner = require('task-runner').TaskRunner;
-var XHR = require('xhrequest');
 var fs = require('fs');
 var uglifyParser = require("uglify-js").parser;
 var uglify = require("uglify-js").uglify;
+var remoteLoader = require('../remote-loader');
 
-var remoteCache = {};
 var debugFileTemplate = '{{#scripts}}document.write(decodeURIComponent("%3Cscript%20src%3D%22/js/{{source}}?' + Date.now() + '%22%3E%3C%2Fscript%3E"));\n{{/scripts}}';
 
-function process(sourceDir, targetDir, taskRunner, processOptions) {
+function execute(sourceDir, targetDir, taskRunner, processOptions) {
 
    var sourceFiles,
        jsOutputFile = targetDir + (processOptions.filename || 'scripts.js'),
        jsIncludeFilter = processOptions.include || ['**.js'],
-       jsRemoteUrls = processOptions.remote || [],
-       jsOutput = '',
+       remoteUrls = processOptions.remote || [],
+       concatenatedOutput = '',
        debugFileList = [];
 
    // task #1 read the directory contents with the supplied filters
@@ -26,45 +25,26 @@ function process(sourceDir, targetDir, taskRunner, processOptions) {
    }, 'Scan for all JS files');
 
    // task #2 when the package should include remote scripts, download them (or read them from the cache)
-   taskRunner.push(function(next) {
-      var remoteTaskRunner = new (require('task-runner').TaskRunner);
-      [].concat(jsRemoteUrls).forEach(function(url) {
-         if(remoteCache[url]) return;
-
-         remoteTaskRunner.push(function(next) {
-            XHR(url, {
-               success: function(data) {
-                  remoteCache[url] = {
-                     content: data,
-                     baseName: require('path').basename(url)
-                  };
-                  fs.writeFile(targetDir + remoteCache[url].baseName, data, 'utf-8', next);
-               },
-               error: function(e) { throw new Error(e) }
-            });
-         }, 'Fetching ' + url);
-      });
-      remoteTaskRunner.start(next);
-   }, 'Fetch remote scripts');
+   remoteLoader(taskRunner, remoteUrls, targetDir);
 
    // task #3 when the package should include remote scripts, push them to the top of the output
    taskRunner.push(function(next) {
-      next([].concat(jsRemoteUrls).forEach(function(url) {
-         jsOutput += remoteCache[url].content + '\n\n';
-         debugFileList.push(remoteCache[url].baseName);
+      next(remoteUrls.forEach(function(url) {
+         concatenatedOutput += remoteLoader.getContent(url) + '\n\n';
+         debugFileList.push(remoteLoader.getName(url));
       }));
    }, 'Concatenate remote scripts');
 
    // task #4 read all the local file content into the output file
    taskRunner.push(function(next) {
-      jsOutput = [jsOutput];
+      concatenatedOutput = [concatenatedOutput];
       sourceFiles.forEach(function(sourceFile) {
          console.log('    [CONCAT] ' + sourceFile);
-         jsOutput.push(fs.readFileSync(sourceDir + sourceFile, 'utf-8'));
+         concatenatedOutput.push(fs.readFileSync(sourceDir + sourceFile, 'utf-8'));
          debugFileList.push(require('path').basename(sourceFile));
       });
-      jsOutput = jsOutput.join('\n');
-      fs.writeFile(jsOutputFile, jsOutput, 'utf-8', next);
+      concatenatedOutput = concatenatedOutput.join('\n');
+      fs.writeFile(jsOutputFile, concatenatedOutput, 'utf-8', next);
    }, 'Concatenate JS files');
 
    // task #5 write out a debug file list
@@ -79,7 +59,7 @@ function process(sourceDir, targetDir, taskRunner, processOptions) {
    taskRunner.push(function(next) {
       var ast;
 
-      ast = uglifyParser.parse(jsOutput);    // parse code and get the initial AST
+      ast = uglifyParser.parse(concatenatedOutput);    // parse code and get the initial AST
       ast = uglify.ast_mangle(ast);          // get a new AST with mangled names
       ast = uglify.ast_squeeze(ast);         // get an AST with compression optimizations
 
@@ -101,9 +81,9 @@ module.exports = function(sourcePath, targetPath, taskRunner, options) {
 
    if(options.processJavascript) {
       taskRunner.push(function(next) {
-         var builds;
+         var builds = options.configuration.javascript;
          try {
-            builds = JSON.parse(fs.readFileSync(sourceDir + 'list.json', 'utf-8'));
+            builds = builds || JSON.parse(fs.readFileSync(sourceDir + 'list.json', 'utf-8'));
             if(!Array.isArray(builds)) {
                throw new TypeError('JavaScript list.json must contain an array of configuration objects.');
             }
@@ -114,7 +94,7 @@ module.exports = function(sourcePath, targetPath, taskRunner, options) {
          }
 
          next(builds.forEach(function(build) {
-            process(sourceDir, targetDir, taskRunner, build);
+            execute(sourceDir, targetDir, taskRunner, build);
          }));
       }, 'Parsing JS filters file');
    }
