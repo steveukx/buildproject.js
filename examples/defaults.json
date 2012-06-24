@@ -53,11 +53,19 @@
             ]
          }
       },
+      "js-inline-empty": [
+         "--process-javascript"
+      ],
       "templates": [
          "--process-templates"
       ],
       "clean": [
          "--clean"
+      ]
+   },
+   "configuration": {
+      "javascript": [
+         { "include": [ "**.js" ], "filename": "wibble.js" }
       ]
    }
 }

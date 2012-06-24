@@ -38,6 +38,13 @@ for(var i = 0; i < appConfig.profile.length; i++) console.log('  [TASK] ', appCo
 var dt = Date.now();
 var builderCommands = Commands.evaluate(appConfig.profile.commands || appConfig.profile);
 builderCommands.configuration = appConfig.profile.configuration || {};
+if(appConfig.configuration) {
+   for(var key in appConfig.configuration) {
+      if(!builderCommands.configuration[key]) {
+         builderCommands.configuration[key] = appConfig.configuration[key];
+      }
+   }
+}
 
 (require('../src/builder'))(appConfig.src, appConfig.target, builderCommands, function() {
    console.log('Build finished in ' + Math.floor((Date.now() - dt)/100)/10 + ' seconds');
