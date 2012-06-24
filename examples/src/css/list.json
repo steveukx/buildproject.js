@@ -1,0 +1,18 @@
+[
+   {
+      "include": [
+         "first.less",
+         "**.less"
+      ],
+      "filename": "local.css"
+   },
+   {
+      "include": [
+         "**.less"
+      ],
+      "remote": [
+         "https://a248.e.akamai.net/assets.github.com/stylesheets/bundles/github-971f8520cf29b0aa7796048da7533fa0e2d950f2.css"
+      ],
+      "filename": "all.css"
+   }
+]
