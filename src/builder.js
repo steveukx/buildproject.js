@@ -14,6 +14,7 @@
       (require('./stages/process-clean.js'))(sourcePath, targetPath, taskRunner, commands);
       (require('./stages/process-create-output.js'))(sourcePath, targetPath, taskRunner, commands);
       (require('./stages/process-templates.js'))(sourcePath, targetPath, taskRunner, commands);
+      (require('./stages/process-snippets.js'))(sourcePath, targetPath, taskRunner, commands);
       (require('./stages/process-javascript.js'))(sourcePath, targetPath, taskRunner, commands);
       (require('./stages/process-css.js'))(sourcePath, targetPath, taskRunner, commands);
       (require('./stages/process-less.js'))(sourcePath, targetPath, taskRunner, commands);

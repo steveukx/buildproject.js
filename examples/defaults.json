@@ -61,7 +61,15 @@
       ],
       "clean": [
          "--clean"
-      ]
+      ],
+      "snippets": {
+         "commands": ["--process-snippets"],
+         "configuration": {
+            "snippets": [
+               { "include": [ "snippets/**.html" ], "filename": "snippets.js" }
+            ]
+         }
+      }
    },
    "configuration": {
       "javascript": [
