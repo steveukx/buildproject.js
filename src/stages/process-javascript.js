@@ -52,7 +52,7 @@ function execute(sourceDir, targetDir, taskRunner, processOptions) {
       var scripts = {scripts: []};
       debugFileList.forEach(function(fileName) {scripts.scripts.push({source: fileName})});
 
-      fs.writeFile(jsOutputFile.replace(/\.js$/, '.debug.js'), require('hogan').compile(debugFileTemplate).render(scripts), 'utf-8', next);
+      fs.writeFile(jsOutputFile.replace(/\.js$/, '.debug.js'), require('hogan.js').compile(debugFileTemplate).render(scripts), 'utf-8', next);
    }, 'Save debug JS file list to ' + jsOutputFile.replace('.js', '.debug.js'));
 
    // task #6 minify the output content

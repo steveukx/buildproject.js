@@ -15,7 +15,7 @@ module.exports = function(sourcePath, targetPath, taskRunner, options) {
    // run the templates build
    if(options.processTemplates) {
       (function() {
-         var Hogan = require('hogan'),
+         var Hogan = require('hogan.js'),
             fs = require('fs'),
             templatePath = sourcePath + (options.templatePath || 'templates').replace(/\/$/, '') + '/',
             includeFilters = ['*.html'],
